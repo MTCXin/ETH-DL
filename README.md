@@ -8,6 +8,7 @@ Deep Learning project
 ## simple-blackbox
 - 黑盒攻击
 - 运行run_simba.py / run_simba_cifar.py
+- 目前使用imagenet1k - valid部分https://www.kaggle.com/datasets/sautkin/imagenet1kvalid/
 
 ## NC_Good_or_Bad
 - 白盒攻击
