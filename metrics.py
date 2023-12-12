@@ -4,6 +4,10 @@ import scipy.stats
 from sklearn.cluster import KMeans
 from skimage.feature import greycomatrix, greycoprops, local_binary_pattern, hog
 # from skimage.filters import gabor_kernel
+from skimage.filters.rank import entropy
+from skimage.morphology import disk
+import porespy as ps
+import pywt
 
 # low-level: color features
 def Color_Histogram(img_path):
@@ -128,3 +132,87 @@ def Laplacian_of_Gaussian_Filter(img_path):
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     img_log = cv2.Laplacian(gray, cv2.CV_16S, ksize=3)
     return img_log
+
+# mid-level: image complexity features
+def Entropy(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    image_entropy = entropy(gray, disk(5)) # local entropy
+    return image_entropy
+
+def Fractal_Dimension(img_path): # ??????????
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    data = ps.metrics.boxcount(gray)
+    FD_value = np.concatenate((data.size, data.count, data.slope), axis = -1)
+    return FD_value
+
+def Edge_Density(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_canny = cv2.Canny(gray, 100, 200)
+    density_value = np.sum(img_canny)/(gray.shape[0]*gray.shape[1]) # sub region density?
+    return density_value
+
+def Spatial_Information(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # sobel
+    ddepth = cv2.CV_16S
+    scale = 1
+    delta = 0
+    grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize = 3, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
+    grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize = 3, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
+    si_value = cv2.sqrt(cv2.pow(grad_x, 2) + cv2.pow(grad_y, 2))
+    return si_value # different to sobel?
+
+
+# mid-level: image Compression/Transformations features
+
+def Discrete_Fourier_Transform(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
+    f = cv2.dft(np.float32(gray), flags=cv2.DFT_COMPLEX_OUTPUT)
+    f_shift = np.fft.fftshift(f)
+    f_complex = f_shift[:,:,0] + 1j*f_shift[:,:,1]
+    f_abs = np.abs(f_complex) + 1 # lie between 1 and 1e6
+    f_bounded = 20 * np.log(f_abs)
+    f_img = cv2.normalize(f_bounded, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
+    return f_img
+
+def Wavelet_Transform(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
+    gray = np.array(gray)
+    LLY, (LHY, HLY, HHY) = pywt.dwt2(img, 'haar') # Haar Discrete Wavelet Transform（HDWT）
+    wavelet_trans = np.concatenate((LLY, LHY, HLY, HHY))
+    return wavelet_trans
+
+def Histogram_Equalization(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
+    dst = cv2.equalizeHist(gray)
+    return dst
+
+def Discrete_Cosine_Transform(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
+    imf = np.float32(gray)
+    dct = cv2.dct(imf)
+    dct = np.uint8(dct*255.0)
+    return dct
+
+def SVD(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
+    u, s, v = np.linalg.svd(gray, full_matrices = False)
+    return s # ?
+
+def PCA(img_path):
+    img = cv2.imread(img_path)	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
+    img_vector = gray.reshape(gray.shape[0]*gray.shape[1])
+    mean, eigenvectors = cv2.PCACompute(img_vector, np.mean(img_vector, axis=0).reshape(1,-1))
+    return eigenvectors
+
+
