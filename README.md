@@ -1,19 +1,15 @@
 # ETH-DL
 Deep Learning project
-先翻出来去年用过的代码，接下来把它们改成直接在cifar数据集上运行的代码
+
 
 ## TODO: 
-- 对Cifar提取特征并保存为JSON
-- 对Cifar进行攻击并保存范数信息
-## simple-blackbox
+- XIN: 继续跑出更多结果
+## Xin-black-attack-simba
 - 黑盒攻击
-- 运行run_simba.py / run_simba_cifar.py
 - 目前使用imagenet1k - valid部分https://www.kaggle.com/datasets/sautkin/imagenet1kvalid/
-
-## NC_Good_or_Bad
-- 白盒攻击
-- 使用validate_pgd.py / fgsm.py
-
+- 目前结果基于Resnet18模型，更改模型/数据集 简单
+- 结果存于文件夹下.\result_black_simba.json 其中linf_norm无效（由于攻击算法linf总是一样的），queries代表攻破图片时向模型请求了多少次output。probs代表攻破时正确类别置信度
+- 目前结果还在继续跑，大约每小时200个。
 ## get_metrics.py
 - 特征提取框架
 
