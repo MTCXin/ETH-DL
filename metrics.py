@@ -235,7 +235,7 @@ def SVD(img_path):
 def PCA_transform(img_path):
     img = cv2.imread(img_path)	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    pca = PCA(n_components = 16)
+    pca = PCA(n_components = int(gray.shape[0]/2))
     pca_values = pca.fit_transform(gray)
     return pca_values
 
