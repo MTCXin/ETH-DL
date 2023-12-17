@@ -6,8 +6,8 @@ from skimage.feature import greycomatrix, greycoprops, local_binary_pattern, hog
 # from skimage.filters import gabor_kernel
 from skimage.filters.rank import entropy
 from skimage.morphology import disk
-import porespy as ps
 import pywt
+from sklearn.decomposition import PCA
 
 # low-level: color features
 def Color_Histogram(img_path):
@@ -68,7 +68,6 @@ def Local_Binary_Patterns(img_path):
     LBP = local_binary_pattern(gray, n_points, radius, METHOD)
     return LBP
 
-# ??????????????
 def Gabor_Filters(img_path):
     img = cv2.imread(img_path)	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -89,7 +88,7 @@ def Histogram_of_Oriented_Gradients(img_path):
     img = cv2.imread(img_path)	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, hog_image = hog(gray, orientations = 8, pixels_per_cell = (4, 4),
-                    cells_per_block=(1, 1), visualize=True, channel_axis=-1)
+                    cells_per_block=(1, 1), visualize = True)
     return hog_image
 
 # low-level: edge-detection features
@@ -143,8 +142,33 @@ def Entropy(img_path):
 def Fractal_Dimension(img_path): # ??????????
     img = cv2.imread(img_path)	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    data = ps.metrics.boxcount(gray)
-    FD_value = np.concatenate((data.size, data.count, data.slope), axis = -1)
+    # data = ps.metrics.boxcount(gray)
+    # FD_value = np.concatenate((data.size, data.count, data.slope), axis = -1)
+
+    # finding all the non-zero pixels
+    pixels = []
+    for i in range(gray.shape[0]):
+        for j in range(gray.shape[1]):
+            if gray[i, j]>0:
+                pixels.append((i, j))
+    
+    Lx = gray.shape[1]
+    Ly = gray.shape[0]
+    pixels = np.array(pixels)
+    
+    # computing the fractal dimension
+    # considering only scales in a logarithmic list
+    scales = np.logspace(0.01, 1, num = 10, endpoint = False, base = 2)
+    Ns = []
+    # looping over several scales
+    for scale in scales:
+        # computing the histogram
+        H, edges = np.histogramdd(pixels, bins = (np.arange(0, Lx, scale), np.arange(0, Ly, scale)))
+        Ns.append(np.sum(H > 0))
+    
+    # linear fit, polynomial of degree 1
+    FD_value = np.polyfit(np.log(scales), np.log(Ns), 1)
+    # FD_value = np.log(Ns)
     return FD_value
 
 def Edge_Density(img_path):
@@ -163,7 +187,7 @@ def Spatial_Information(img_path):
     delta = 0
     grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize = 3, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
     grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize = 3, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
-    si_value = cv2.sqrt(cv2.pow(grad_x, 2) + cv2.pow(grad_y, 2))
+    si_value = cv2.sqrt(cv2.pow(grad_x/255., 2)*255. + cv2.pow(grad_y/255., 2)*255.)
     return si_value # different to sobel?
 
 
@@ -206,13 +230,13 @@ def SVD(img_path):
     img = cv2.imread(img_path)	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     u, s, v = np.linalg.svd(gray, full_matrices = False)
-    return s # ?
+    return s
 
-def PCA(img_path):
+def PCA_transform(img_path):
     img = cv2.imread(img_path)	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    img_vector = gray.reshape(gray.shape[0]*gray.shape[1])
-    mean, eigenvectors = cv2.PCACompute(img_vector, np.mean(img_vector, axis=0).reshape(1,-1))
-    return eigenvectors
+    pca = PCA(n_components = 16)
+    pca_values = pca.fit_transform(gray)
+    return pca_values
 
 
