@@ -16,7 +16,7 @@ JSON_NAME = 'image_features'
 def feature_extract(img_path):
     metric_dic = {}
     for metric in METRICS:
-        metric_dic[metric.__name__] = metric(img_path)
+        metric_dic[metric.__name__] = metric(img_path).tolist()
     return metric_dic
 
 def json_add(img_dataset, img_class, img_path, metric_dict, json_array):
@@ -28,8 +28,8 @@ def json_add(img_dataset, img_class, img_path, metric_dict, json_array):
     json_array.append(json_dic)
 
 def main():
-    json_array = []
     for root, ds, fs in os.walk(PATH):
+        json_array = []
         for file in fs:
             img_dataset, img_class = root.replace(PATH, '').split('\\')
             img_path = os.path.join(root, file)
@@ -37,8 +37,8 @@ def main():
             print(img_path)
             metric_dic = feature_extract(img_path)
             json_add(img_dataset, img_class, img_path, metric_dic, json_array)
-    with open(JSON_NAME+'.json', 'w', encoding='utf-8') as json_file:
-        json.dump(json_array, json_file, indent=4)
-   
+        with open(JSON_NAME+'.json', 'a', encoding='utf-8') as json_file:
+            json.dump(json_array, json_file, indent=4)
+    
 if __name__ == '__main__':
     main()

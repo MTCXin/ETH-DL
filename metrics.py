@@ -14,6 +14,7 @@ warnings.filterwarnings("ignore")
 # low-level: color features
 def Color_Histogram(img_path):
     img = cv2.imread(img_path)
+    img = cv2.resize(img, (256, 256))
     calhist_r = cv2.calcHist(img, channels = [0], mask = None, histSize = [256], ranges = [0, 256])
     calhist_g = cv2.calcHist(img, channels = [1], mask = None, histSize = [256], ranges = [0, 256])
     calhist_b = cv2.calcHist(img, channels = [2], mask = None, histSize = [256], ranges = [0, 256])
@@ -22,6 +23,7 @@ def Color_Histogram(img_path):
 
 def Color_Moment(img_path):
     img = cv2.imread(img_path)
+    img = cv2.resize(img, (256, 256))
     Mean_, Var_, Skew_ = [], [], []
     for i in range(3):
         mean = np.mean(img[:, :, i])
@@ -35,6 +37,7 @@ def Color_Moment(img_path):
 
 def Dominant_Color_Descriptor(img_path):
     img = cv2.imread(img_path)
+    img = cv2.resize(img, (256, 256))
     img_ = img.reshape(img.shape[0]*img.shape[1], img.shape[2])
     n_colors = 10
     model = KMeans(n_clusters = n_colors, random_state = 0).fit(img_)
@@ -45,6 +48,7 @@ def Dominant_Color_Descriptor(img_path):
 
 def Gray_Level_Cooccurrence_Matrix(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     properties = ['dissimilarity', 'correlation', 'homogeneity', 'contrast', 'ASM', 'energy']
 
@@ -63,6 +67,7 @@ def Gray_Level_Cooccurrence_Matrix(img_path):
 
 def Local_Binary_Patterns(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     METHOD = 'uniform'
     radius = 3
@@ -72,6 +77,7 @@ def Local_Binary_Patterns(img_path):
 
 def Gabor_Filters(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # cv2.getGaborKernel(ksize, sigma, theta, lambda, gamma, psi, ktype)
     # ksize - size of gabor filter (n, n)
@@ -88,6 +94,7 @@ def Gabor_Filters(img_path):
 
 def Histogram_of_Oriented_Gradients(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, hog_image = hog(gray, orientations = 8, pixels_per_cell = (4, 4),
                     cells_per_block=(1, 1), visualize = True)
@@ -97,6 +104,7 @@ def Histogram_of_Oriented_Gradients(img_path):
 
 def Sobel(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     src = cv2.GaussianBlur(img, (3, 3), 0)
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     ddepth = cv2.CV_16S
@@ -111,7 +119,8 @@ def Sobel(img_path):
 
 def Prewitt(img_path):
     img = cv2.imread(img_path)	
-    src = cv2.GaussianBlur(img, (3, 3), 0)
+    img = cv2.resize(img, (256, 256))
+    src = cv2.GaussianBlur(img, (7, 7), 0)
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     kernelx = np.array([[1,1,1], [0,0,0], [-1,-1,-1]])
     kernely = np.array([[-1,0,1], [-1,0,1], [-1,0,1]])
@@ -122,14 +131,16 @@ def Prewitt(img_path):
 
 def Canny(img_path):
     img = cv2.imread(img_path)	
-    src = cv2.GaussianBlur(img, (3, 3), 0)
+    img = cv2.resize(img, (256, 256))
+    src = cv2.GaussianBlur(img, (7, 7), 0)
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     img_canny = cv2.Canny(gray, 100, 200)
     return img_canny
 
 def Laplacian_of_Gaussian_Filter(img_path):
     img = cv2.imread(img_path)	
-    src = cv2.GaussianBlur(img, (3, 3), 0)
+    img = cv2.resize(img, (256, 256))
+    src = cv2.GaussianBlur(img, (7, 7), 0)
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     img_log = cv2.Laplacian(gray, cv2.CV_16S, ksize=3)
     return img_log
@@ -137,12 +148,14 @@ def Laplacian_of_Gaussian_Filter(img_path):
 # mid-level: image complexity features
 def Entropy(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     image_entropy = entropy(gray, disk(5)) # local entropy
     return image_entropy
 
 def Fractal_Dimension(img_path): # ??????????
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # data = ps.metrics.boxcount(gray)
     # FD_value = np.concatenate((data.size, data.count, data.slope), axis = -1)
@@ -175,6 +188,7 @@ def Fractal_Dimension(img_path): # ??????????
 
 def Edge_Density(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img_canny = cv2.Canny(gray, 100, 200)
     density_value = np.sum(img_canny)/(gray.shape[0]*gray.shape[1]) # sub region density?
@@ -182,13 +196,14 @@ def Edge_Density(img_path):
 
 def Spatial_Information(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # sobel
     ddepth = cv2.CV_16S
     scale = 1
     delta = 0
-    grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize = 3, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
-    grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize = 3, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
+    grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize = 7, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
+    grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize = 7, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
     si_value = cv2.sqrt(cv2.pow(grad_x/255., 2)*255. + cv2.pow(grad_y/255., 2)*255.)
     return si_value # different to sobel?
 
@@ -197,6 +212,7 @@ def Spatial_Information(img_path):
 
 def Discrete_Fourier_Transform(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     f = cv2.dft(np.float32(gray), flags=cv2.DFT_COMPLEX_OUTPUT)
     f_shift = np.fft.fftshift(f)
@@ -208,6 +224,7 @@ def Discrete_Fourier_Transform(img_path):
 
 def Wavelet_Transform(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     gray = np.array(gray)
     LLY, (LHY, HLY, HHY) = pywt.dwt2(img, 'haar') # Haar Discrete Wavelet Transform（HDWT）
@@ -216,12 +233,14 @@ def Wavelet_Transform(img_path):
 
 def Histogram_Equalization(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     dst = cv2.equalizeHist(gray)
     return dst
 
 def Discrete_Cosine_Transform(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     imf = np.float32(gray)
     dct = cv2.dct(imf)
@@ -230,14 +249,16 @@ def Discrete_Cosine_Transform(img_path):
 
 def SVD(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     u, s, v = np.linalg.svd(gray, full_matrices = False)
     return s
 
 def PCA_transform(img_path):
     img = cv2.imread(img_path)	
+    img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    pca = PCA(n_components = int(gray.shape[0]/2))
+    pca = PCA(n_components = int(gray.shape[0]/8))
     pca_values = pca.fit_transform(gray)
     return pca_values
 
