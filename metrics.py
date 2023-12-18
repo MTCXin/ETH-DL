@@ -110,8 +110,8 @@ def Sobel(img_path):
     ddepth = cv2.CV_16S
     scale = 1
     delta = 0
-    grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize = 3, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
-    grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize = 3, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
+    grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize = 19, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
+    grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize = 19, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
     abs_grad_x = cv2.convertScaleAbs(grad_x)
     abs_grad_y = cv2.convertScaleAbs(grad_y)
     sobel_grad = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
@@ -120,7 +120,7 @@ def Sobel(img_path):
 def Prewitt(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (256, 256))
-    src = cv2.GaussianBlur(img, (7, 7), 0)
+    src = cv2.GaussianBlur(img, (19, 19), 0)
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     kernelx = np.array([[1,1,1], [0,0,0], [-1,-1,-1]])
     kernely = np.array([[-1,0,1], [-1,0,1], [-1,0,1]])
@@ -132,7 +132,7 @@ def Prewitt(img_path):
 def Canny(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (256, 256))
-    src = cv2.GaussianBlur(img, (7, 7), 0)
+    src = cv2.GaussianBlur(img, (19, 19), 0)
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     img_canny = cv2.Canny(gray, 100, 200)
     return img_canny
@@ -140,7 +140,7 @@ def Canny(img_path):
 def Laplacian_of_Gaussian_Filter(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (256, 256))
-    src = cv2.GaussianBlur(img, (7, 7), 0)
+    src = cv2.GaussianBlur(img, (19, 19), 0)
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     img_log = cv2.Laplacian(gray, cv2.CV_16S, ksize=3)
     return img_log
@@ -150,7 +150,7 @@ def Entropy(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (256, 256))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    image_entropy = entropy(gray, disk(5)) # local entropy
+    image_entropy = entropy(gray, disk(25)) # local entropy
     return image_entropy
 
 def Fractal_Dimension(img_path): # ??????????

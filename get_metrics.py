@@ -5,11 +5,10 @@ from metrics import *
 import warnings
 warnings.filterwarnings("ignore")
 
-METRICS = [Color_Histogram, Color_Moment, Dominant_Color_Descriptor, 
-            Gray_Level_Cooccurrence_Matrix, Local_Binary_Patterns, Gabor_Filters, Histogram_of_Oriented_Gradients, 
-            Sobel, Prewitt, Canny, Laplacian_of_Gaussian_Filter, 
-            Entropy, Fractal_Dimension, Edge_Density, Spatial_Information, 
-            Discrete_Fourier_Transform, Wavelet_Transform, Histogram_Equalization, Discrete_Cosine_Transform, SVD, PCA_transform]
+METRICS = [Color_Moment,
+            Gray_Level_Cooccurrence_Matrix, 
+            Entropy, Fractal_Dimension,
+            Discrete_Cosine_Transform, SVD]
 PATH = './imgs/'
 JSON_NAME = 'image_features'
 
