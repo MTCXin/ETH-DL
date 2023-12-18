@@ -2,12 +2,14 @@ import cv2
 import numpy as np
 import scipy.stats
 from sklearn.cluster import KMeans
-from skimage.feature import greycomatrix, greycoprops, local_binary_pattern, hog
+from skimage.feature import graycomatrix, graycoprops, local_binary_pattern, hog
 # from skimage.filters import gabor_kernel
 from skimage.filters.rank import entropy
 from skimage.morphology import disk
 import pywt
 from sklearn.decomposition import PCA
+import warnings
+warnings.filterwarnings("ignore")
 
 # low-level: color features
 def Color_Histogram(img_path):
@@ -46,14 +48,14 @@ def Gray_Level_Cooccurrence_Matrix(img_path):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     properties = ['dissimilarity', 'correlation', 'homogeneity', 'contrast', 'ASM', 'energy']
 
-    glcm = greycomatrix(gray, 
+    glcm = graycomatrix(gray, 
                         distances = [5], 
                         angles = [0, np.pi/4, np.pi/2, 3*np.pi/4], 
                         levels = 256,
                         symmetric = True, 
                         normed = True) 
     feature = []
-    glcm_props = [propery for name in properties for propery in greycoprops(glcm, name)[0]]
+    glcm_props = [propery for name in properties for propery in graycoprops(glcm, name)[0]]
     for item in glcm_props:
         feature.append(item)
     GLCM = np.array(feature)

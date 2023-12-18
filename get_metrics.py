@@ -2,6 +2,8 @@
 import os
 import json
 from metrics import *
+import warnings
+warnings.filterwarnings("ignore")
 
 METRICS = [Color_Histogram, Color_Moment, Dominant_Color_Descriptor, 
             Gray_Level_Cooccurrence_Matrix, Local_Binary_Patterns, Gabor_Filters, Histogram_of_Oriented_Gradients, 
@@ -9,7 +11,7 @@ METRICS = [Color_Histogram, Color_Moment, Dominant_Color_Descriptor,
             Entropy, Fractal_Dimension, Edge_Density, Spatial_Information, 
             Discrete_Fourier_Transform, Wavelet_Transform, Histogram_Equalization, Discrete_Cosine_Transform, SVD, PCA_transform]
 PATH = './imgs/'
-JSON_NAME = 'TEST'
+JSON_NAME = 'image_features'
 
 def feature_extract(img_path):
     metric_dic = {}
@@ -31,6 +33,8 @@ def main():
         for file in fs:
             img_dataset, img_class = root.replace(PATH, '').split('\\')
             img_path = os.path.join(root, file)
+            img_path = img_path.replace('\\', '/')
+            print(img_path)
             metric_dic = feature_extract(img_path)
             json_add(img_dataset, img_class, img_path, metric_dic, json_array)
     with open(JSON_NAME+'.json', 'w', encoding='utf-8') as json_file:
