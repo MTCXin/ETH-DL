@@ -2,7 +2,7 @@
 
 import os
 import json
-import tqdm
+from tqdm import tqdm
 from metrics import *
 
 METRICS = [Color_Histogram, Color_Moment, Dominant_Color_Descriptor, Gray_Level_Cooccurrence_Matrix, 
