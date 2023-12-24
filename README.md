@@ -17,5 +17,5 @@ Deep Learning project
 - 各种特征提取算法
 
 ## test.ipynb
--LASSO, input: img_features [Color_Moment_1, Color_Moment_2, ..., Entropy_1, Entropy_2, ....], output: [ls_norm, queries]
+-LASSO, input: img_features [Color_Moment_1, Color_Moment_2, ..., Entropy_1, Entropy_2, ....], output: [l2_norm, queries]
 - img_feature.json一个特征存一个文件
