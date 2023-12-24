@@ -15,3 +15,6 @@ Deep Learning project
 
 ## metrics.py
 - 各种特征提取算法
+
+## test.ipynb
+- img_feature.json一个特征存一个文件
