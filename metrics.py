@@ -12,6 +12,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # low-level: color features
+
+''' Not useful
 def Color_Histogram(img_path): #1
     img = cv2.imread(img_path)
     img = cv2.resize(img, (224, 224))
@@ -20,20 +22,31 @@ def Color_Histogram(img_path): #1
     calhist_b = cv2.calcHist(img, channels = [2], mask = None, histSize = [256], ranges = [0, 256])
     calhist_ = np.concatenate((calhist_r, calhist_g, calhist_b), axis = -1)
     return calhist_
+'''
 
-def Color_Moment(img_path): #1
+def Color_Statistic(img_path):
     img = cv2.imread(img_path)
     img = cv2.resize(img, (224, 224))
-    Mean_, Var_, Skew_ = [], [], []
+    Statistics = []
     for i in range(3):
         mean = np.mean(img[:, :, i])
+        Statistics.append(mean)
         var = np.var(img[:, :, i])
+        Statistics.append(var)
         skew = scipy.stats.skew(img[:, :, i], axis = None)
-        Mean_ = np.append(Mean_, mean)
-        Var_ = np.append(Var_, var)
-        Skew_ = np.append(Skew_, skew)
-    colormo = np.concatenate((Mean_.reshape(-1, 1), Var_.reshape(-1, 1), Skew_.reshape(-1, 1)), axis = -1).T
-    return colormo
+        Statistics.append(skew)
+        quantile5 = np.quantile(img[:, :, i], 0.05)
+        Statistics.append(quantile5)
+        median = np.quantile(img[:, :, i], 0.5)
+        Statistics.append(median)
+        quantile95 = np.quantile(img[:, :, i], 0.95)
+        Statistics.append(quantile95)
+        std = np.std(img[:, :, i])
+        z = (img[:, :, i] - mean) / std
+        outliers = np.sum(np.abs(z) > 2)
+        Statistics.append(outliers)
+    Statistics = np.array(Statistics).reshape(3,-1).T
+    return Statistics
 
 def Dominant_Color_Descriptor(img_path): 
     img = cv2.imread(img_path)
@@ -62,7 +75,7 @@ def Gray_Level_Cooccurrence_Matrix(img_path):
     glcm_props = [propery for name in properties for propery in graycoprops(glcm, name)[0]]
     for item in glcm_props:
         feature.append(item)
-    GLCM = np.array(feature)
+    GLCM = np.array(feature).reshape(6,4)
     return GLCM
 
 def Local_Binary_Patterns(img_path):
@@ -103,20 +116,27 @@ def Histogram_of_Oriented_Gradients(img_path):
 # low-level: edge-detection features
 
 def Sobel(img_path):
+    Statistics = []
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
-    src = cv2.GaussianBlur(img, (3, 3), 0)
-    gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-    ddepth = cv2.CV_16S
-    scale = 1
-    delta = 0
-    grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize = 19, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
-    grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize = 19, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
-    abs_grad_x = cv2.convertScaleAbs(grad_x)
-    abs_grad_y = cv2.convertScaleAbs(grad_y)
-    sobel_grad = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
-    return sobel_grad
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    grad_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0)
+    grad_y = cv2.Sobel(gray, cv2.CV_64F, 0, 1)
+    sobel_grad = cv2.magnitude(grad_x, grad_y)
+    
+    sobel_mean = np.mean(sobel_grad)
+    Statistics.append(sobel_mean)
+    sobel_var = np.var(sobel_grad)
+    Statistics.append(sobel_var)
+    quantile95 = np.quantile(sobel_grad, 0.95)
+    Statistics.append(quantile95)
+    maximum = np.max(sobel_grad)
+    Statistics.append(maximum)
+    
+    Statistics = np.array(Statistics)
+    return Statistics
 
+''' Not useful
 def Prewitt(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
@@ -128,15 +148,23 @@ def Prewitt(img_path):
     img_prewitty = cv2.filter2D(gray, -1, kernely)
     img_prewitt = img_prewittx + img_prewitty
     return img_prewitt
+'''
 
 def Canny(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
-    src = cv2.GaussianBlur(img, (19, 19), 0)
-    gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-    img_canny = cv2.Canny(gray, 100, 200)
-    return img_canny
 
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_canny = cv2.Canny(gray, 100, 200)
+    edge_percentage = np.sum(img_canny==255) / (img_canny.shape[0]*img_canny.shape[1])
+    
+    GBimg = cv2.GaussianBlur(img, (5, 5), 0)
+    GBgray = cv2.cvtColor(GBimg, cv2.COLOR_BGR2GRAY)
+    GB_img_canny = cv2.Canny(GBgray, 100, 200)
+    GB_edge_percentage = np.sum(GB_img_canny==255) / (GB_img_canny.shape[0]*GB_img_canny.shape[1])
+    return np.array([edge_percentage, GB_edge_percentage])
+
+''' Not useful
 def Laplacian_of_Gaussian_Filter(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
@@ -144,6 +172,7 @@ def Laplacian_of_Gaussian_Filter(img_path):
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     img_log = cv2.Laplacian(gray, cv2.CV_16S, ksize=3)
     return img_log
+'''
 
 # mid-level: image complexity features
 def Entropy(img_path):
@@ -186,6 +215,7 @@ def Fractal_Dimension(img_path): # ??????????
     # FD_value = np.log(Ns)
     return FD_value
 
+''' Same as Canny
 def Edge_Density(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
@@ -193,7 +223,9 @@ def Edge_Density(img_path):
     img_canny = cv2.Canny(gray, 100, 200)
     density_value = np.sum(img_canny)/(gray.shape[0]*gray.shape[1]) # sub region density?
     return density_value
+'''
 
+''' Same as Sobel
 def Spatial_Information(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
@@ -206,7 +238,7 @@ def Spatial_Information(img_path):
     grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize = 7, scale = scale, delta = delta, borderType = cv2.BORDER_DEFAULT)
     si_value = cv2.sqrt(cv2.pow(grad_x/255., 2)*255. + cv2.pow(grad_y/255., 2)*255.)
     return si_value # different to sobel?
-
+'''
 
 # mid-level: image Compression/Transformations features
 
