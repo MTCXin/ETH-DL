@@ -242,56 +242,67 @@ def Spatial_Information(img_path):
 
 # mid-level: image Compression/Transformations features
 
-def Discrete_Fourier_Transform(img_path):
+def Histogram_Equalization(img_path,levels=16):
     img = cv2.imread(img_path)	
-    img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    f = cv2.dft(np.float32(gray), flags=cv2.DFT_COMPLEX_OUTPUT)
-    f_shift = np.fft.fftshift(f)
-    f_complex = f_shift[:,:,0] + 1j*f_shift[:,:,1]
-    f_abs = np.abs(f_complex) + 1 # lie between 1 and 1e6
-    f_bounded = 20 * np.log(f_abs)
-    f_img = cv2.normalize(f_bounded, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
-    return f_img
+    hist = cv2.calcHist([gray],[0],None,[levels], [0,255])
+    return hist
 
-def Wavelet_Transform(img_path):
-    img = cv2.imread(img_path)	
-    img = cv2.resize(img, (224, 224))
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    gray = np.array(gray)
-    LLY, (LHY, HLY, HHY) = pywt.dwt2(img, 'haar') # Haar Discrete Wavelet Transform（HDWT）
-    wavelet_trans = np.concatenate((LLY, LHY, HLY, HHY))
-    return wavelet_trans
-
-def Histogram_Equalization(img_path):
-    img = cv2.imread(img_path)	
-    img = cv2.resize(img, (224, 224))
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    dst = cv2.equalizeHist(gray)
-    return dst
-
-def Discrete_Cosine_Transform(img_path):
-    img = cv2.imread(img_path)	
-    img = cv2.resize(img, (224, 224))
+def Discrete_Cosine_Transform_max(img_path,n):
+    img = cv2.imread(img_path)
+    img = cv2.resize(img, (224, 224))	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     imf = np.float32(gray)
     dct = cv2.dct(imf)
-    dct = np.uint8(dct*255.0)
-    return dct
+    # dct = np.uint8(dct*255.0)
+    output_height = dct.shape[0] // n
+    output_width = dct.shape[1] // n
+    pooled_dct = np.zeros((output_height, output_width), dtype=dct.dtype)
+
+    for i in range(output_height):
+        for j in range(output_width):
+            block = dct[i*n:(i+1)*n, j*n:(j+1)*n]
+            pooled_dct[i, j] = np.max(block)
+
+    return pooled_dct
+
+def Discrete_Cosine_Transform_avg(img_path,n):
+    img = cv2.imread(img_path)
+    img = cv2.resize(img, (224, 224))	
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
+    imf = np.float32(gray)
+    dct = cv2.dct(imf)
+    # dct = np.uint8(dct*255.0)
+    output_height = dct.shape[0] // n
+    output_width = dct.shape[1] // n
+    pooled_dct = np.zeros((output_height, output_width), dtype=dct.dtype)
+
+    for i in range(output_height):
+        for j in range(output_width):
+            block = dct[i*n:(i+1)*n, j*n:(j+1)*n]
+            pooled_dct[i, j] = np.mean(block)
+
+    return pooled_dct
 
 def SVD(img_path):
     img = cv2.imread(img_path)	
-    img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     u, s, v = np.linalg.svd(gray, full_matrices = False)
     return s
 
-def PCA_transform(img_path):
-    img = cv2.imread(img_path)	
+def PCA_transform(img_path, n_components):
+    img = cv2.imread(img_path)
     img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    pca = PCA(n_components = int(gray.shape[0]/8))
-    pca_values = pca.fit_transform(gray)
-    return pca_values
+    # pca = PCA(n_components = int(gray.shape[0]/2))
+    # pca_values = pca.fit_transform(gray)
 
+    # Initialize PCA with the number of components
+    pca = PCA(n_components=n_components)
+    
+    # Fit PCA on the image data
+    pca.fit(gray)
+    
+    # Return the eigenvalues (variance explained by each of the selected components)
+    return pca.explained_variance_
 

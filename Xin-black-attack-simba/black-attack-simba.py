@@ -43,6 +43,22 @@ else:
 # load model and dataset
 weights = EfficientNet_B2_Weights.IMAGENET1K_V1
 model = efficientnet_b2(weights=weights).cuda()
+
+input_data = torch.randn(10, 3, 224, 224).cuda()
+
+outputs = []
+for name, module in model.named_modules():
+    try:
+        input_data = module(input_data)
+        outputs.append((name, input_data))
+    except:
+        print('error:',name)
+
+for output in outputs:
+    print("Layer Name:", output[0])
+    print("Output Shape:", output[1].shape)
+
+pdb.set_trace()
 # model = resnet18(weights="IMAGENET1K_V1").cuda() https://pytorch.org/vision/stable/models.html
 # model = getattr(models, args.model)(pretrained=True).cuda()
 # model.eval()
