@@ -5,14 +5,19 @@ import json
 from tqdm import tqdm
 from metrics import *
 
-METRICS = [Color_Histogram, Color_Moment, Dominant_Color_Descriptor, Gray_Level_Cooccurrence_Matrix, 
-           Local_Binary_Patterns, Gabor_Filters, Histogram_of_Oriented_Gradients, Sobel, Prewitt, 
-           Canny, Laplacian_of_Gaussian_Filter, Entropy, Fractal_Dimension, Edge_Density, 
-           Spatial_Information, Discrete_Fourier_Transform, Wavelet_Transform, Histogram_Equalization,
-           Discrete_Cosine_Transform, SVD, PCA_transform]
-            
+# METRICS = [Color_Histogram, Color_Moment, Dominant_Color_Descriptor, Gray_Level_Cooccurrence_Matrix, 
+#            Local_Binary_Patterns, Gabor_Filters, Histogram_of_Oriented_Gradients, Sobel, Prewitt, 
+#            Canny, Laplacian_of_Gaussian_Filter, Entropy, Fractal_Dimension, Edge_Density, 
+#            Spatial_Information, Discrete_Fourier_Transform, Wavelet_Transform, Histogram_Equalization,
+#            Discrete_Cosine_Transform, SVD, PCA_transform]
+METRICS = [Histogram_Equalization, Dominant_Color_Descriptor, Gray_Level_Cooccurrence_Matrix, 
+           Local_Binary_Patterns, Gabor_Filters, Histogram_of_Oriented_Gradients, Sobel,
+           Canny, Entropy, Fractal_Dimension,
+          Histogram_Equalization,
+           Discrete_Cosine_Transform_max, Discrete_Cosine_Transform_avg, SVD, PCA_transform]
 PATH = './imgs/'
 JSON_NAME = 'TEST'
+GT_JSON='./Xin-black-attack-simba/result_black_simba.json'
 
 def feature_extract(img_path):
     metric_dic = {}
@@ -31,7 +36,8 @@ def main():
     json_dic = {}
     for root, ds, fs in os.walk(PATH):
         for file in tqdm(fs):
-            img_dataset, img_class = root.replace(PATH, '').split('\\')
+            # img_dataset, img_class = root.replace(PATH, '').split('\\')  
+            img_dataset, img_class = root.replace(PATH, '').split('/')  #Linux Version
             img_path = os.path.join(root, file)
             json_add(img_dataset, img_class, img_path, json_dic)
     with open(JSON_NAME+'.json', 'w', encoding='utf-8') as json_file:

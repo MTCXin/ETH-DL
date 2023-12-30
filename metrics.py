@@ -248,7 +248,7 @@ def Histogram_Equalization(img_path,levels=16):
     hist = cv2.calcHist([gray],[0],None,[levels], [0,255])
     return hist
 
-def Discrete_Cosine_Transform_max(img_path,n):
+def Discrete_Cosine_Transform_max(img_path,n=16):
     img = cv2.imread(img_path)
     img = cv2.resize(img, (224, 224))	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
@@ -266,7 +266,7 @@ def Discrete_Cosine_Transform_max(img_path,n):
 
     return pooled_dct
 
-def Discrete_Cosine_Transform_avg(img_path,n):
+def Discrete_Cosine_Transform_avg(img_path,n=16):
     img = cv2.imread(img_path)
     img = cv2.resize(img, (224, 224))	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
@@ -290,7 +290,7 @@ def SVD(img_path):
     u, s, v = np.linalg.svd(gray, full_matrices = False)
     return s
 
-def PCA_transform(img_path, n_components):
+def PCA_transform(img_path, n_components=28):
     img = cv2.imread(img_path)
     img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
