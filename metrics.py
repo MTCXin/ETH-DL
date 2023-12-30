@@ -86,7 +86,19 @@ def Local_Binary_Patterns(img_path):
     radius = 3
     n_points = 8*radius
     LBP = local_binary_pattern(gray, n_points, radius, METHOD)
-    return LBP
+    dim_ = 20
+    LBP_reduced = np.zeros((dim_, dim_))
+    for i in range(dim_):
+        for j in range(dim_):
+            if i == dim_ - 1 and j == dim_ -1:
+                LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:, int(LBP.shape[1]/dim_)*j:], axis = None)
+            elif i == dim_ - 1:
+                LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:, int(LBP.shape[1]/dim_)*j:int(LBP.shape[1]/dim_)*(j+1)], axis = None)
+            elif j == dim_ - 1:
+                LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:int(LBP.shape[0]/dim_)*(i+1), int(LBP.shape[1]/dim_)*j:], axis = None)
+            else: 
+                LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:int(LBP.shape[0]/dim_)*(i+1), int(LBP.shape[1]/dim_)*j:int(LBP.shape[1]/dim_)*(j+1)], axis = None)
+    return LBP_reduced
 
 def Gabor_Filters(img_path):
     img = cv2.imread(img_path)	
@@ -102,16 +114,40 @@ def Gabor_Filters(img_path):
     # ktype - type and range of values that each pixel in the gabor kernel can hold
 
     g_kernel = cv2.getGaborKernel((4, 4), 1.0, np.pi/4, 2.0, 0.5, 0, ktype=cv2.CV_32F) # ?
-    filtered_img = cv2.filter2D(gray, cv2.CV_8UC3, g_kernel)
-    return filtered_img
+    GF = cv2.filter2D(gray, cv2.CV_8UC3, g_kernel)
+    dim_ = 20
+    GF_reduced = np.zeros((dim_, dim_))
+    for i in range(dim_):
+        for j in range(dim_):
+            if i == dim_ - 1 and j == dim_ -1:
+                GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:, int(GF.shape[1]/dim_)*j:], axis = None)
+            elif i == dim_ - 1:
+                GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:, int(GF.shape[1]/dim_)*j:int(GF.shape[1]/dim_)*(j+1)], axis = None)
+            elif j == dim_ - 1:
+                GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:int(GF.shape[0]/dim_)*(i+1), int(GF.shape[1]/dim_)*j:], axis = None)
+            else: 
+                GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:int(GF.shape[0]/dim_)*(i+1), int(GF.shape[1]/dim_)*j:int(GF.shape[1]/dim_)*(j+1)], axis = None)
+    return GF_reduced
 
 def Histogram_of_Oriented_Gradients(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, hog_image = hog(gray, orientations = 8, pixels_per_cell = (4, 4),
+    _, hog_ = hog(gray, orientations = 8, pixels_per_cell = (4, 4),
                     cells_per_block=(1, 1), visualize = True)
-    return hog_image
+    dim_ = 20
+    hog_reduced = np.zeros((dim_, dim_))
+    for i in range(dim_):
+        for j in range(dim_):
+            if i == dim_ - 1 and j == dim_ -1:
+                hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:, int(hog_.shape[1]/dim_)*j:], axis = None)
+            elif i == dim_ - 1:
+                hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:, int(hog_.shape[1]/dim_)*j:int(hog_.shape[1]/dim_)*(j+1)], axis = None)
+            elif j == dim_ - 1:
+                hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:int(hog_.shape[0]/dim_)*(i+1), int(hog_.shape[1]/dim_)*j:], axis = None)
+            else: 
+                hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:int(hog_.shape[0]/dim_)*(i+1), int(hog_.shape[1]/dim_)*j:int(hog_.shape[1]/dim_)*(j+1)], axis = None)
+    return hog_reduced
 
 # low-level: edge-detection features
 
@@ -179,8 +215,20 @@ def Entropy(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    image_entropy = entropy(gray, disk(25)) # local entropy
-    return image_entropy
+    entropy_ = entropy(gray, disk(5)) # local entropy
+    dim_ = 20
+    entropy_reduced = np.zeros((dim_, dim_))
+    for i in range(dim_):
+        for j in range(dim_):
+            if i == dim_ - 1 and j == dim_ -1:
+                entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:, int(entropy_.shape[1]/dim_)*j:], axis = None)
+            elif i == dim_ - 1:
+                entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:, int(entropy_.shape[1]/dim_)*j:int(entropy_.shape[1]/dim_)*(j+1)], axis = None)
+            elif j == dim_ - 1:
+                entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:int(entropy_.shape[0]/dim_)*(i+1), int(entropy_.shape[1]/dim_)*j:], axis = None)
+            else: 
+                entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:int(entropy_.shape[0]/dim_)*(i+1), int(entropy_.shape[1]/dim_)*j:int(entropy_.shape[1]/dim_)*(j+1)], axis = None)
+    return entropy_reduced
 
 def Fractal_Dimension(img_path): # ??????????
     img = cv2.imread(img_path)	
