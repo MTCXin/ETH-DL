@@ -6,7 +6,7 @@ from skimage.feature import graycomatrix, graycoprops, local_binary_pattern, hog
 # from skimage.filters import gabor_kernel
 from skimage.filters.rank import entropy
 from skimage.morphology import disk
-import pywt
+import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 import warnings
 warnings.filterwarnings("ignore")
@@ -78,27 +78,29 @@ def Gray_Level_Cooccurrence_Matrix(img_path):
     GLCM = np.array(feature).reshape(6,4)
     return GLCM
 
-def Local_Binary_Patterns(img_path):
+def Local_Binary_Patterns(img_path): ###滤波
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     METHOD = 'uniform'
-    radius = 3
-    n_points = 8*radius
-    LBP = local_binary_pattern(gray, n_points, radius, METHOD)
-    dim_ = 20
-    LBP_reduced = np.zeros((dim_, dim_))
-    for i in range(dim_):
-        for j in range(dim_):
-            if i == dim_ - 1 and j == dim_ -1:
-                LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:, int(LBP.shape[1]/dim_)*j:], axis = None)
-            elif i == dim_ - 1:
-                LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:, int(LBP.shape[1]/dim_)*j:int(LBP.shape[1]/dim_)*(j+1)], axis = None)
-            elif j == dim_ - 1:
-                LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:int(LBP.shape[0]/dim_)*(i+1), int(LBP.shape[1]/dim_)*j:], axis = None)
-            else: 
-                LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:int(LBP.shape[0]/dim_)*(i+1), int(LBP.shape[1]/dim_)*j:int(LBP.shape[1]/dim_)*(j+1)], axis = None)
-    return LBP_reduced
+    params = [(1, 8), (2, 16), (3, 24)]
+    Statistics = []
+    for para in params:
+        lbp = local_binary_pattern(gray, para[0], para[1], METHOD)
+        Statistics.append([np.mean(lbp), np.var(lbp), scipy.stats.skew(lbp, axis=None), np.quantile(lbp, 0.05), np.quantile(lbp, 0.95)])
+    # dim_ = 20
+    # LBP_reduced = np.zeros((dim_, dim_))
+    # for i in range(dim_):
+    #     for j in range(dim_):
+    #         if i == dim_ - 1 and j == dim_ -1:
+    #             LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:, int(LBP.shape[1]/dim_)*j:], axis = None)
+    #         elif i == dim_ - 1:
+    #             LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:, int(LBP.shape[1]/dim_)*j:int(LBP.shape[1]/dim_)*(j+1)], axis = None)
+    #         elif j == dim_ - 1:
+    #             LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:int(LBP.shape[0]/dim_)*(i+1), int(LBP.shape[1]/dim_)*j:], axis = None)
+    #         else: 
+    #             LBP_reduced[i][j] = np.mean(LBP[int(LBP.shape[0]/dim_)*i:int(LBP.shape[0]/dim_)*(i+1), int(LBP.shape[1]/dim_)*j:int(LBP.shape[1]/dim_)*(j+1)], axis = None)
+    return np.array(Statistics)
 
 def Gabor_Filters(img_path):
     img = cv2.imread(img_path)	
@@ -113,42 +115,52 @@ def Gabor_Filters(img_path):
     # psi - phase offset
     # ktype - type and range of values that each pixel in the gabor kernel can hold
 
-    g_kernel = cv2.getGaborKernel((4, 4), 1.0, np.pi/4, 2.0, 0.5, 0, ktype=cv2.CV_32F) # ?
-    GF = cv2.filter2D(gray, cv2.CV_8UC3, g_kernel)
-    dim_ = 20
-    GF_reduced = np.zeros((dim_, dim_))
-    for i in range(dim_):
-        for j in range(dim_):
-            if i == dim_ - 1 and j == dim_ -1:
-                GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:, int(GF.shape[1]/dim_)*j:], axis = None)
-            elif i == dim_ - 1:
-                GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:, int(GF.shape[1]/dim_)*j:int(GF.shape[1]/dim_)*(j+1)], axis = None)
-            elif j == dim_ - 1:
-                GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:int(GF.shape[0]/dim_)*(i+1), int(GF.shape[1]/dim_)*j:], axis = None)
-            else: 
-                GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:int(GF.shape[0]/dim_)*(i+1), int(GF.shape[1]/dim_)*j:int(GF.shape[1]/dim_)*(j+1)], axis = None)
-    return GF_reduced
+    lam = [2, 5]
+    Statistics = []
+    for l in lam:
+        g_kernel = cv2.getGaborKernel((9, 9), 1.0, np.pi/4, l, 0.5, 0, ktype=cv2.CV_32F) # ?
+        GF = cv2.filter2D(gray, -1, g_kernel)
+        Statistics.append([np.mean(GF), np.var(GF), scipy.stats.skew(GF, axis=None), np.quantile(GF, 0.05), np.quantile(GF, 0.95)])
+        
+    # dim_ = 20
+    # GF_reduced = np.zeros((dim_, dim_))
+    # for i in range(dim_):
+    #     for j in range(dim_):
+    #         if i == dim_ - 1 and j == dim_ -1:
+    #             GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:, int(GF.shape[1]/dim_)*j:], axis = None)
+    #         elif i == dim_ - 1:
+    #             GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:, int(GF.shape[1]/dim_)*j:int(GF.shape[1]/dim_)*(j+1)], axis = None)
+    #         elif j == dim_ - 1:
+    #             GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:int(GF.shape[0]/dim_)*(i+1), int(GF.shape[1]/dim_)*j:], axis = None)
+    #         else: 
+    #             GF_reduced[i][j] = np.mean(GF[int(GF.shape[0]/dim_)*i:int(GF.shape[0]/dim_)*(i+1), int(GF.shape[1]/dim_)*j:int(GF.shape[1]/dim_)*(j+1)], axis = None)
+    return np.array(Statistics)
 
-def Histogram_of_Oriented_Gradients(img_path):
+'''BUG
+def Histogram_of_Oriented_Gradients(img_path):  ##梯度方向数据检测
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, hog_ = hog(gray, orientations = 8, pixels_per_cell = (4, 4),
-                    cells_per_block=(1, 1), visualize = True)
-    dim_ = 20
-    hog_reduced = np.zeros((dim_, dim_))
-    for i in range(dim_):
-        for j in range(dim_):
-            if i == dim_ - 1 and j == dim_ -1:
-                hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:, int(hog_.shape[1]/dim_)*j:], axis = None)
-            elif i == dim_ - 1:
-                hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:, int(hog_.shape[1]/dim_)*j:int(hog_.shape[1]/dim_)*(j+1)], axis = None)
-            elif j == dim_ - 1:
-                hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:int(hog_.shape[0]/dim_)*(i+1), int(hog_.shape[1]/dim_)*j:], axis = None)
-            else: 
-                hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:int(hog_.shape[0]/dim_)*(i+1), int(hog_.shape[1]/dim_)*j:int(hog_.shape[1]/dim_)*(j+1)], axis = None)
-    return hog_reduced
+    fd = hog(gray, visualize=True)
 
+    fd = np.array(fd)
+    print(fd.shape)
+    Statistics = []
+    Statistics.append(np.mean(fd), np.var(fd), scipy.stats.skew(fd), np.quantile(fd, 0.05), np.quantile(fd, 0.95))
+    # dim_ = 20
+    # hog_reduced = np.zeros((dim_, dim_))
+    # for i in range(dim_):
+    #     for j in range(dim_):
+    #         if i == dim_ - 1 and j == dim_ -1:
+    #             hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:, int(hog_.shape[1]/dim_)*j:], axis = None)
+    #         elif i == dim_ - 1:
+    #             hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:, int(hog_.shape[1]/dim_)*j:int(hog_.shape[1]/dim_)*(j+1)], axis = None)
+    #         elif j == dim_ - 1:
+    #             hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:int(hog_.shape[0]/dim_)*(i+1), int(hog_.shape[1]/dim_)*j:], axis = None)
+    #         else: 
+    #             hog_reduced[i][j] = np.mean(hog_[int(hog_.shape[0]/dim_)*i:int(hog_.shape[0]/dim_)*(i+1), int(hog_.shape[1]/dim_)*j:int(hog_.shape[1]/dim_)*(j+1)], axis = None)
+    return np.array(Statistics)
+'''
 # low-level: edge-detection features
 
 def Sobel(img_path):
@@ -215,20 +227,25 @@ def Entropy(img_path):
     img = cv2.imread(img_path)	
     img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    entropy_ = entropy(gray, disk(5)) # local entropy
-    dim_ = 20
-    entropy_reduced = np.zeros((dim_, dim_))
-    for i in range(dim_):
-        for j in range(dim_):
-            if i == dim_ - 1 and j == dim_ -1:
-                entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:, int(entropy_.shape[1]/dim_)*j:], axis = None)
-            elif i == dim_ - 1:
-                entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:, int(entropy_.shape[1]/dim_)*j:int(entropy_.shape[1]/dim_)*(j+1)], axis = None)
-            elif j == dim_ - 1:
-                entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:int(entropy_.shape[0]/dim_)*(i+1), int(entropy_.shape[1]/dim_)*j:], axis = None)
-            else: 
-                entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:int(entropy_.shape[0]/dim_)*(i+1), int(entropy_.shape[1]/dim_)*j:int(entropy_.shape[1]/dim_)*(j+1)], axis = None)
-    return entropy_reduced
+
+    structure = [disk(3), disk(5), disk(10)]
+    Statistics = []
+    for struc in structure:
+        ent = entropy(gray, struc) # local entropy
+        Statistics.append([np.mean(ent), np.var(ent), scipy.stats.skew(ent, axis=None), np.quantile(ent, 0.05), np.quantile(ent, 0.95)])
+    # dim_ = 20
+    # entropy_reduced = np.zeros((dim_, dim_))
+    # for i in range(dim_):
+    #     for j in range(dim_):
+    #         if i == dim_ - 1 and j == dim_ -1:
+    #             entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:, int(entropy_.shape[1]/dim_)*j:], axis = None)
+    #         elif i == dim_ - 1:
+    #             entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:, int(entropy_.shape[1]/dim_)*j:int(entropy_.shape[1]/dim_)*(j+1)], axis = None)
+    #         elif j == dim_ - 1:
+    #             entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:int(entropy_.shape[0]/dim_)*(i+1), int(entropy_.shape[1]/dim_)*j:], axis = None)
+    #         else: 
+    #             entropy_reduced[i][j] = np.mean(entropy_[int(entropy_.shape[0]/dim_)*i:int(entropy_.shape[0]/dim_)*(i+1), int(entropy_.shape[1]/dim_)*j:int(entropy_.shape[1]/dim_)*(j+1)], axis = None)
+    return np.array(Statistics)
 
 def Fractal_Dimension(img_path): # ??????????
     img = cv2.imread(img_path)	
@@ -290,11 +307,13 @@ def Spatial_Information(img_path):
 
 # mid-level: image Compression/Transformations features
 
+'''
 def Histogram_Equalization(img_path,levels=16):
     img = cv2.imread(img_path)	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
     hist = cv2.calcHist([gray],[0],None,[levels], [0,255])
     return hist
+'''
 
 def Discrete_Cosine_Transform_max(img_path,n=16):
     img = cv2.imread(img_path)
@@ -333,24 +352,34 @@ def Discrete_Cosine_Transform_avg(img_path,n=16):
     return pooled_dct
 
 def SVD(img_path):
-    img = cv2.imread(img_path)	
+    img = cv2.imread(img_path)
+    img = cv2.resize(img, (224, 224))	
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    u, s, v = np.linalg.svd(gray, full_matrices = False)
-    return s
+    
+    U, S, V = np.linalg.svd(gray, full_matrices=False)
+    
+    k = 20
+    
+    svd = [S[i]/np.sum(S) for i in range(k)]
+    
+    return np.array(svd)
 
-def PCA_transform(img_path, n_components=28):
+def PCA_transform(img_path):
     img = cv2.imread(img_path)
     img = cv2.resize(img, (224, 224))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
-    # pca = PCA(n_components = int(gray.shape[0]/2))
-    # pca_values = pca.fit_transform(gray)
-
-    # Initialize PCA with the number of components
+    
+    n_components = 50
     pca = PCA(n_components=n_components)
     
-    # Fit PCA on the image data
     pca.fit(gray)
     
-    # Return the eigenvalues (variance explained by each of the selected components)
-    return pca.explained_variance_
 
+    ratio = pca.explained_variance_ratio_
+    
+    sumratio = np.array([np.sum(ratio[:i]) for i in range(1, n_components+1)])
+    
+    t_component = np.array([(np.argmax(sumratio > value)+1 if sumratio[n_components-1]>value else n_components)
+                            for value in [0.5, 0.7, 0.8, 0.9, 0.95]])
+
+    return np.concatenate((sumratio[:10], t_component))
