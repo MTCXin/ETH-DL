@@ -1,3 +1,0 @@
-[submodule "pytorch-cifar"]
-	path = pytorch-cifar
-	url = https://github.com/kuangliu/pytorch-cifar.git
