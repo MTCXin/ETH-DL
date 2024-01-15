@@ -11,6 +11,9 @@ Deep Learning project
 - Algorithms of image features
 ## get_metrics.py
 - Get image features
-## test.ipynb
--LASSO, input: img_features [Color_Moment_1, Color_Moment_2, ..., Entropy_1, Entropy_2, ....], output: [l2_norm, queries]
-- img_feature.json一个特征存一个文件
+## Regression.Rmd
+- Regression Analysis
+## feature_analysis.ipynb
+- Feature Analysis
+## Vulnet.py/Vulnet_classify.py/MetricsNet.py
+- Neural Networks
