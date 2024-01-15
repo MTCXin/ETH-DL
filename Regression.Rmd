@@ -1,0 +1,98 @@
+---
+title: "Test"
+author: "Zhu Ruizhe"
+date: "2024-01-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(glmnet)
+```
+
+```{r}
+X <- read.csv('X.csv', row.names = 1)
+Y <- read.csv('Y.csv', row.names = 1)
+target <- Y['l2_norm']
+```
+
+```{r}
+colnames(X)[c(79,80,98)]
+```
+
+```{r}
+PCA <- X[,c(144:158)]
+X <- X[,-c(79,80,98)]
+```
+
+```{r}
+colnames(X)
+Gb <- X[,c(89:97)]
+```
+```{r}
+cl <- X[,c(121:136)]
+cl <- scale(cl)
+cldata <- cbind(target, cl)
+clmodel <- lm(l2_norm ~ ., data = cldata)
+summary(clmodel)
+```
+
+```{r}
+Xdata <- as.matrix(X)
+Ydata <- as.matrix(target)
+target[target==0] <- 15
+Xdata <- scale(Xdata)
+```
+
+```{r}
+Gb <- scale(Gb)
+Gbdata <- cbind(target, Gb)
+Gbmodel <- lm(l2_norm ~ ., data = Gbdata)
+summary(Gbmodel)
+```
+
+```{r}
+PCA <- scale(PCA)
+pcadata <- cbind(target, PCA)
+pcamodel <- lm(l2_norm ~ ., data = pcadata)
+summary(pcamodel)
+```
+
+```{r}
+which(is.na(Xdata), arr.ind = TRUE)
+```
+
+```{r}
+cv_model <- cv.glmnet(Xdata, Ydata, alpha = 1)
+best_lambda <- cv_model$lambda.min
+lasso_model_best <- glmnet(Xdata, Ydata, alpha = 1, lambda = best_lambda)
+```
+
+```{r}
+coef(lasso_model_best)
+```
+
+```{r}
+lmdata <- cbind(target, Xdata)
+lmmodel <- lm(l2_norm ~ ., data = lmdata)
+summary(lmmodel)
+```
+
+```{r}
+summary(Y['l2_norm'])
+hist(as.matrix(Y['l2_norm']), breaks=100)
+L2 <- Y['l2_norm']
+L2[L2==0] <- 15
+summary(Y['queries'])
+hist(as.matrix(Y['queries']))
+Q <- Y['queries']
+Q[Q==0] <- 50000
+fit <- smooth.spline(as.matrix(L2), as.matrix(Q))
+```
+
+```{r}
+plot(as.matrix(L2), as.matrix(Q), main="Smooth Spline")
+lines(fit, col="red")
+summary(fit)
+```
+
